@@ -672,6 +672,9 @@ class RayPPOTrainer(object):
                 timing_raw = {}
 
                 batch: DataProto = DataProto.from_single_dict(batch_dict)
+                batch.meta_info["redistribute_reward"] = (
+                    self.config.algorithm.redistribute_reward
+                )
 
                 # pop those keys for generation
                 gen_batch = batch.pop(
