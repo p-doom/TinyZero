@@ -431,6 +431,12 @@ class RayPPOTrainer(object):
         data_source_lst = []
         for test_data in self.val_dataloader:
             test_batch = DataProto.from_single_dict(test_data)
+            test_batch.meta_info["redistribute_reward"] = (
+                self.config.algorithm.redistribute_reward
+            )
+            test_batch.meta_info["redistribute_reward_implicit"] = (
+                self.config.algorithm.redistribute_reward_implicit
+            )
             # test_batch = test_batch.to('cuda')
 
             # we only do validation on rule-based rm
