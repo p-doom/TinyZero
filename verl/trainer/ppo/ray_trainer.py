@@ -139,7 +139,7 @@ def compute_advantage(data: DataProto, adv_estimator, gamma=1.0, lam=1.0, num_re
         attention_mask = data.batch["attention_mask"]
         response_mask = attention_mask[:, -response_length:]
         token_level_rewards = data.batch["token_level_rewards"]
-        redistribute_reward_implicit = data.meta_info["redistribute_reward_implicit"]:
+        redistribute_reward_implicit = data.meta_info["redistribute_reward_implicit"]
         advantages, returns = core_algos.compute_gae_advantage_return(
             token_level_rewards=token_level_rewards,
             values=values,
