@@ -68,7 +68,7 @@ def get_kl_controller(config):
 
 
 def compute_gae_advantage_return(token_level_rewards: torch.Tensor, values: torch.Tensor, eos_mask: torch.Tensor,
-                                 gamma: torch.Tensor, lam: torch.Tensor):
+                                 gamma: torch.Tensor, lam: torch.Tensor, redistribute_reward_implicit=False):
     """Adapted from https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_trainer.py
 
     Args:
@@ -101,6 +101,12 @@ def compute_gae_advantage_return(token_level_rewards: torch.Tensor, values: torc
             lastgaelam = delta + gamma * lam * lastgaelam
             advantages_reversed.append(lastgaelam)
         advantages = torch.stack(advantages_reversed[::-1], dim=1)
+
+        if redistribute_reward_implicit:
+            # Scale the advantages by (T-t)/T
+            scaling_factors = torch.arange(gen_len, 0, -1, dtype=torch.float32) / gen_len
+            scaling_factors = scaling_factors.unsqueeze(0).expand_as(advantages)
+            advantages *= scaling_factors
 
         returns = advantages + values
         advantages = verl_F.masked_whiten(advantages, eos_mask)

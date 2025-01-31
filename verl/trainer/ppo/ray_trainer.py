@@ -139,12 +139,14 @@ def compute_advantage(data: DataProto, adv_estimator, gamma=1.0, lam=1.0, num_re
         attention_mask = data.batch["attention_mask"]
         response_mask = attention_mask[:, -response_length:]
         token_level_rewards = data.batch["token_level_rewards"]
+        redistribute_reward_implicit = data.meta_info["redistribute_reward_implicit"]:
         advantages, returns = core_algos.compute_gae_advantage_return(
             token_level_rewards=token_level_rewards,
             values=values,
             eos_mask=response_mask,
             gamma=gamma,
             lam=lam,
+            redistribute_reward_implicit=redistribute_reward_implicit,
         )
         data.batch["advantages"] = advantages
         data.batch["returns"] = returns
@@ -672,8 +674,18 @@ class RayPPOTrainer(object):
                 timing_raw = {}
 
                 batch: DataProto = DataProto.from_single_dict(batch_dict)
+                assert not (
+                    self.config.algorithm.redistribute_reward
+                    and self.config.algorithm.redistribute_reward_implicit
+                ), (
+                    "Only one of `redistribute_reward` and `redistribute_reward_implicit` can be True"
+                )
+
                 batch.meta_info["redistribute_reward"] = (
                     self.config.algorithm.redistribute_reward
+                )
+                batch.meta_info["redistribute_reward_implicit"] = (
+                    self.config.algorithm.redistribute_reward_implicit
                 )
 
                 # pop those keys for generation

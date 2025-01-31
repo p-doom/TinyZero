@@ -144,6 +144,7 @@ algorithm:
     type: fixed
     kl_coef: 0.001
   redistribute_reward: False
+  redistribute_reward_implicit: False
 
 trainer:
   total_epochs: 30
