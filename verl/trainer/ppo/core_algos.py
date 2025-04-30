@@ -102,13 +102,15 @@ def compute_gae_advantage_return(token_level_rewards: torch.Tensor, values: torc
             advantages_reversed.append(lastgaelam)
         advantages = torch.stack(advantages_reversed[::-1], dim=1)
 
+        returns = advantages + values
+
+        # Note: advantage scaling must not influence the value targets in implicit reward redistribution
         if redistribute_reward_implicit:
             # Scale the advantages by (T-t)/T
             scaling_factors = torch.arange(gen_len, 0, -1, dtype=torch.float32) / gen_len
             scaling_factors = scaling_factors.unsqueeze(0).expand_as(advantages)
             advantages *= scaling_factors
 
-        returns = advantages + values
         advantages = verl_F.masked_whiten(advantages, eos_mask)
     return advantages, returns
 
