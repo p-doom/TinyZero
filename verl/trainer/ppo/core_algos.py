@@ -107,8 +107,12 @@ def compute_gae_advantage_return(token_level_rewards: torch.Tensor, values: torc
         # Note: advantage scaling must not influence the value targets in implicit reward redistribution
         if redistribute_reward_implicit:
             # Scale the advantages by (T-t)/T
-            scaling_factors = torch.arange(gen_len, 0, -1, dtype=torch.float32) / gen_len
-            scaling_factors = scaling_factors.unsqueeze(0).expand_as(advantages)
+            # Compute per‐example length T from the EOS mask
+            lengths = eos_mask.sum(dim=1, keepdim=True).to(advantages)
+            # Build a [1, T_max] tensor of time indices
+            time_idx = torch.arange(gen_len, device=advantages.device, dtype=advantages.dtype).unsqueeze(0)
+            # Scale by (T - t) / T and clamp negative values to zero
+            scaling_factors = ((lengths - time_idx) / lengths).clamp(min=0.0)
             advantages *= scaling_factors
 
         advantages = verl_F.masked_whiten(advantages, eos_mask)
