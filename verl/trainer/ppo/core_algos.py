@@ -104,7 +104,7 @@ def compute_gae_advantage_return(token_level_rewards: torch.Tensor, values: torc
 
         if redistribute_reward_implicit:
             # Scale the advantages by (T-t)/T
-            # Compute per‐example actual length T from the EOS mask
+            # Compute per‐example length T from the EOS mask
             lengths = eos_mask.sum(dim=1, keepdim=True).to(advantages)
             # Build a [1, T_max] tensor of time indices
             time_idx = torch.arange(gen_len, device=advantages.device, dtype=advantages.dtype).unsqueeze(0)
